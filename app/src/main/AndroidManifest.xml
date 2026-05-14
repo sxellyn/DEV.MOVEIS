@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherApp">
         <activity
+            android:name=".ui.MapPage"
+            android:exported="false"
+            android:label="@string/title_activity_map_page"
+            android:theme="@style/Theme.WeatherApp" />
+        <activity
+            android:name=".ui.ListPage"
+            android:exported="false"
+            android:label="@string/title_activity_list_page"
+            android:theme="@style/Theme.WeatherApp" />
+        <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:label="@string/title_activity_register"
@@ -31,7 +41,6 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.WeatherApp" />
-
     </application>
 
 </manifest>

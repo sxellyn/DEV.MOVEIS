@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.example.weatherapp.ui.HomePage
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,40 +39,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun HomePage(modifier: Modifier = Modifier) {
-    val activity = LocalActivity.current as Activity
-    val modifier = modifier.fillMaxWidth(fraction = 0.9f)
-
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = CenterHorizontally
-    ) {
-        Text(
-            text = "Bem-vindo ao WeatherApp!",
-            fontSize = 28.sp
-        )
-
-        Spacer(modifier = Modifier.size(20.dp))
-
-        Button(
-            onClick = {
-                activity.finish()
-            }
-        ) {
-            Text("Sair")
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomePagePreview() {
-    WeatherAppTheme {
-        HomePage()
     }
 }
