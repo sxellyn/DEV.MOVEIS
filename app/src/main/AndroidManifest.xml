@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherApp">
         <activity
+            android:name=".ui.nav.BottomNavItem"
+            android:exported="false"
+            android:label="@string/title_activity_bottom_nav_item"
+            android:theme="@style/Theme.WeatherApp" />
+        <activity
             android:name=".ui.MapPage"
             android:exported="false"
             android:label="@string/title_activity_map_page"
