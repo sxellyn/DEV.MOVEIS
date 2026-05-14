@@ -27,6 +27,7 @@ import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import com.example.weatherapp.viewmodel.MainViewModel
 
 private fun getCities() = List(20) { i ->
     City(
@@ -87,12 +88,11 @@ fun CityItem(
 }
 
 @Composable
-fun ListPage(modifier: Modifier = Modifier) {
-
-    val cityList = remember {
-        getCities().toMutableStateList()
-    }
-
+fun ListPage(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel
+) {
+    val cityList = viewModel.cities
     val activity = LocalActivity.current as Activity
 
     LazyColumn(
@@ -100,23 +100,18 @@ fun ListPage(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .padding(8.dp)
     ) {
-
-        items(
-            cityList,
-            key = { it.name }
-        ) { city ->
-
+        items(cityList, key = { it.name }) { city ->
             CityItem(
                 city = city,
-
                 onClose = {
                     Toast.makeText(
                         activity,
-                        "Remover ${city.name}",
+                        "Removendo ${city.name}",
                         Toast.LENGTH_SHORT
                     ).show()
-                },
 
+                    viewModel.remove(city)
+                },
                 onClick = {
                     Toast.makeText(
                         activity,

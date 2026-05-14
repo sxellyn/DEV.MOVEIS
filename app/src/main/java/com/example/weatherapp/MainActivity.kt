@@ -22,9 +22,14 @@ import com.example.weatherapp.ui.nav.BottomNavBar
 import com.example.weatherapp.ui.nav.BottomNavItem
 import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import androidx.activity.viewModels
+import com.example.weatherapp.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -33,14 +38,13 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
 
             WeatherAppTheme {
+
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = { Text("Bem-vindo/a!") },
                             actions = {
-                                IconButton(
-                                    onClick = { finish() }
-                                ) {
+                                IconButton(onClick = { finish() }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                                         contentDescription = "Sair"
@@ -62,9 +66,7 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { }
-                        ) {
+                        FloatingActionButton(onClick = { }) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Adicionar"
@@ -72,11 +74,10 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
-                    Box(
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
+                    Box(modifier = Modifier.padding(innerPadding)) {
                         MainNavHost(
-                            navController = navController
+                            navController = navController,
+                            viewModel = viewModel
                         )
                     }
                 }
