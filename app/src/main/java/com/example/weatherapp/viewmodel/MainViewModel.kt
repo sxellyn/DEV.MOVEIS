@@ -4,7 +4,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import com.example.weatherapp.model.City
 
-private fun getCities() = List(20) { i ->
+private fun getCities() = List(30) { i ->
     City(name = "Cidade $i", weather = "Carregando clima...")
 }
 
@@ -12,9 +12,7 @@ class MainViewModel : ViewModel() {
 
     private val _cities = getCities().toMutableStateList()
 
-    val cities
-        get() = _cities.toList()
-
+    val cities = _cities
     fun remove(city: City) {
         _cities.remove(city)
     }

@@ -106,7 +106,7 @@ fun ListPage(
                 onClose = {
                     Toast.makeText(
                         activity,
-                        "Removendo ${city.name}",
+                        "${city.name} Removida",
                         Toast.LENGTH_SHORT
                     ).show()
 
