@@ -29,6 +29,11 @@ import com.example.weatherapp.ui.nav.BottomNavItem
 import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import com.example.weatherapp.viewmodel.MainViewModel
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.weatherapp.ui.nav.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -43,6 +48,14 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val navController = rememberNavController()
+
+            val currentRoute = navController.currentBackStackEntryAsState()
+            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) == true
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = {}
+            )
 
             var showDialog by rememberSaveable {
                 mutableStateOf(false)
@@ -90,17 +103,10 @@ class MainActivity : ComponentActivity() {
                     },
 
                     floatingActionButton = {
-
-                        FloatingActionButton(
-                            onClick = {
-                                showDialog = true
+                        if (showButton) {
+                            FloatingActionButton(onClick = { showDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = "Adicionar")
                             }
-                        ) {
-
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Adicionar"
-                            )
                         }
                     }
 
@@ -109,6 +115,8 @@ class MainActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier.padding(innerPadding)
                     ) {
+
+                        launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
                         MainNavHost(
                             navController = navController,
