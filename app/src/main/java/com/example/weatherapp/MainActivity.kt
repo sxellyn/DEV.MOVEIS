@@ -78,8 +78,7 @@ class MainActivity : ComponentActivity() {
                             actions = {
 
                                 IconButton(
-                                    onClick = { Firebase.auth.signOut()
-                                        finish()}
+                                    onClick = { Firebase.auth.signOut()}
                                 ) {
 
                                     Icon(

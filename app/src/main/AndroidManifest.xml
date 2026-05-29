@@ -12,31 +12,37 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WeatherApp">
+        android:theme="@style/Theme.WeatherApp"
+        android:name=".WeatherApp">
         <activity
             android:name=".ui.nav.BottomNavItem"
             android:exported="false"
             android:label="@string/title_activity_bottom_nav_item"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".ui.MapPage"
             android:exported="false"
             android:label="@string/title_activity_map_page"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".ui.ListPage"
             android:exported="false"
             android:label="@string/title_activity_list_page"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".RegisterActivity"
             android:exported="false"
             android:label="@string/title_activity_register"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.WeatherApp">
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -47,7 +53,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:launchMode="singleTask"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
