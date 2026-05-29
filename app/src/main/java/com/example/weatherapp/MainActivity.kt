@@ -34,6 +34,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.weatherapp.ui.nav.Route
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -76,7 +78,8 @@ class MainActivity : ComponentActivity() {
                             actions = {
 
                                 IconButton(
-                                    onClick = { finish() }
+                                    onClick = { Firebase.auth.signOut()
+                                        finish()}
                                 ) {
 
                                     Icon(
