@@ -31,6 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.example.weatherapp.db.fb.FBDatabase
+import com.example.weatherapp.model.User
+import com.example.weatherapp.db.fb.toFBUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -122,6 +125,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
                     Firebase.auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(activity) { task ->
                             if (task.isSuccessful) {
+                                FBDatabase().register(User(name, email).toFBUser())
                                 Toast.makeText(
                                     activity,
                                     "Registro OK!",
