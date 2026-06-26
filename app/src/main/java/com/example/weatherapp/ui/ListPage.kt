@@ -3,6 +3,7 @@ package com.example.weatherapp.ui
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,7 +94,7 @@ fun ListPage(
                     viewModel.remove(city)
                 },
                 onClick = {
-                    Toast.makeText(activity, "Cidade selecionada: ${city.name}", Toast.LENGTH_SHORT).show()
+                    viewModel.city = city.name
                 }
             )
         }

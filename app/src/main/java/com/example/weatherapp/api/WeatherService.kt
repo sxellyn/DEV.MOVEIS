@@ -45,6 +45,11 @@ class WeatherService {
         enqueue(call) { onResponse.invoke(it) }
     }
 
+    fun getForecast(name: String, onResponse: (APIWeatherForecast?) -> Unit) {
+        val call: Call<APIWeatherForecast?> = weatherAPI.forecast(name)
+        enqueue(call) { onResponse.invoke(it) }
+    }
+
     private fun search(query: String, onResponse: (APILocation?) -> Unit) {
         val call: Call<List<APILocation>?> = weatherAPI.search(query)
         enqueue(call) { list -> onResponse(list?.let { if (it.isNotEmpty()) it[0] else null }) }
