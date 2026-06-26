@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.example.weatherapp.model.Weather
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -67,12 +68,14 @@ fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
         )
 
-        viewModel.cities.forEach { city ->
-            city.location?.let { location ->
+        viewModel.cities.forEach {
+            if (it.location != null) {
+                val weather = viewModel.weather(it.name)
+                val desc = if (weather == Weather.LOADING) "Carregando clima..." else weather.desc
                 Marker(
-                    state = MarkerState(position = location),
-                    title = city.name,
-                    snippet = "$location"
+                    state = MarkerState(position = it.location!!),
+                    title = it.name,
+                    snippet = desc
                 )
             }
         }

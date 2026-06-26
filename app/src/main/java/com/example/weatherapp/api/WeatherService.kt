@@ -19,6 +19,19 @@ class WeatherService {
         weatherAPI = retrofitAPI.create(WeatherServiceAPI::class.java)
     }
 
+    private fun <T> enqueue(call: Call<T?>, onResponse: ((T?) -> Unit)? = null) {
+        call.enqueue(object : Callback<T?> {
+            override fun onResponse(call: Call<T?>, response: Response<T?>) {
+                val obj: T? = response.body()
+                onResponse?.invoke(obj)
+            }
+
+            override fun onFailure(call: Call<T?>, t: Throwable) {
+                Log.w("WeatherApp WARNING", "" + t.message)
+            }
+        })
+    }
+
     fun getName(lat: Double, lng: Double, onResponse: (String?) -> Unit) {
         search("$lat,$lng") { loc -> onResponse(loc?.name) }
     }
@@ -27,20 +40,13 @@ class WeatherService {
         search(name) { loc -> onResponse(loc?.lat, loc?.lon) }
     }
 
+    fun getWeather(name: String, onResponse: (APICurrentWeather?) -> Unit) {
+        val call: Call<APICurrentWeather?> = weatherAPI.weather(name)
+        enqueue(call) { onResponse.invoke(it) }
+    }
+
     private fun search(query: String, onResponse: (APILocation?) -> Unit) {
         val call: Call<List<APILocation>?> = weatherAPI.search(query)
-        call.enqueue(object : Callback<List<APILocation>?> {
-            override fun onResponse(
-                call: Call<List<APILocation>?>,
-                response: Response<List<APILocation>?>
-            ) {
-                onResponse(response.body()?.let { if (it.isNotEmpty()) it[0] else null })
-            }
-
-            override fun onFailure(call: Call<List<APILocation>?>, t: Throwable) {
-                Log.w("WeatherApp WARNING", "" + t.message)
-                onResponse(null)
-            }
-        })
+        enqueue(call) { list -> onResponse(list?.let { if (it.isNotEmpty()) it[0] else null }) }
     }
 }

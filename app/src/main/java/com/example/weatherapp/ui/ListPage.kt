@@ -1,5 +1,8 @@
 package com.example.weatherapp.ui
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,27 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.City
-import android.app.Activity
-import android.widget.Toast
-import androidx.activity.compose.LocalActivity
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
+import com.example.weatherapp.model.Weather
 import com.example.weatherapp.viewmodel.MainViewModel
-
-private fun getCities() = List(20) { i ->
-    City(
-        name = "Cidade $i",
-        weather = "Carregando clima..."
-    )
-}
 
 @Composable
 fun CityItem(
     city: City,
+    weather: Weather,
     onClick: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val desc = if (weather == Weather.LOADING) "Carregando clima..." else weather.desc
 
     Row(
         modifier = modifier
@@ -51,7 +45,6 @@ fun CityItem(
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Icon(
             Icons.Rounded.FavoriteBorder,
             contentDescription = ""
@@ -59,30 +52,21 @@ fun CityItem(
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        Column(
-            modifier = modifier.weight(1f)
-        ) {
-
+        Column(modifier = modifier.weight(1f)) {
             Text(
                 modifier = Modifier,
                 text = city.name,
                 fontSize = 24.sp
             )
-
             Text(
                 modifier = Modifier,
-                text = city.weather ?: "Carregando clima...",
+                text = desc,
                 fontSize = 16.sp
             )
         }
 
-        IconButton(
-            onClick = onClose
-        ) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = "Close"
-            )
+        IconButton(onClick = onClose) {
+            Icon(Icons.Filled.Close, contentDescription = "Close")
         }
     }
 }
@@ -100,24 +84,16 @@ fun ListPage(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        items(cityList, key = { it.name }) { city ->
+        items(items = cityList, key = { it.name }) { city ->
             CityItem(
                 city = city,
+                weather = viewModel.weather(city.name),
                 onClose = {
-                    Toast.makeText(
-                        activity,
-                        "${city.name} Removida",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
+                    Toast.makeText(activity, "${city.name} Removida", Toast.LENGTH_SHORT).show()
                     viewModel.remove(city)
                 },
                 onClick = {
-                    Toast.makeText(
-                        activity,
-                        "Cidade selecionada: ${city.name}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(activity, "Cidade selecionada: ${city.name}", Toast.LENGTH_SHORT).show()
                 }
             )
         }
