@@ -29,6 +29,7 @@ import com.example.weatherapp.ui.nav.BottomNavBar
 import com.example.weatherapp.ui.nav.BottomNavItem
 import com.example.weatherapp.ui.nav.MainNavHost
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.example.weatherapp.api.WeatherService
 import com.example.weatherapp.db.fb.FBDatabase
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.example.weatherapp.viewmodel.MainViewModelFactory
@@ -51,8 +52,9 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val fbDB = remember { FBDatabase() }
+            val weatherService = remember { WeatherService() }
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB)
+                factory = MainViewModelFactory(fbDB, weatherService)
             )
 
             val navController = rememberNavController()
@@ -144,7 +146,7 @@ class MainActivity : ComponentActivity() {
 
                         onConfirm = { cityName ->
 
-                            viewModel.add(cityName)
+                            viewModel.addCity(cityName)
 
                             showDialog = false
                         }

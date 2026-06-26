@@ -43,10 +43,7 @@ fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
         onMapClick = {
-            viewModel.add(
-                name = "Cidade@${it.latitude}:${it.longitude}",
-                location = it
-            )
+            viewModel.addCity(it)
         }
     ) {
         Marker(
