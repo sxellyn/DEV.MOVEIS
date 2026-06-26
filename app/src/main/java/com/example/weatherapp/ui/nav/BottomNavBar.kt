@@ -5,25 +5,18 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.compose.runtime.getValue
+import com.example.weatherapp.viewmodel.MainViewModel
 
 @Composable
 fun BottomNavBar(
+    viewModel: MainViewModel,
     navController: NavHostController,
     items: List<BottomNavItem>
 ) {
-    NavigationBar(
-        contentColor = Color.Black
-    ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination: NavDestination? = navBackStackEntry?.destination
-
+    NavigationBar(contentColor = Color.Black) {
         items.forEach { item ->
             NavigationBarItem(
                 icon = {
@@ -33,24 +26,12 @@ fun BottomNavBar(
                     )
                 },
                 label = {
-                    Text(
-                        text = item.title,
-                        fontSize = 12.sp
-                    )
+                    Text(text = item.title, fontSize = 12.sp)
                 },
                 alwaysShowLabel = true,
-                selected = currentDestination?.route == item.route::class.qualifiedName,                onClick = {
-                    navController.navigate(item.route) {
-                        navController.graph.startDestinationRoute?.let {
-                            popUpTo(it) {
-                                saveState = true
-                            }
-
-                            restoreState = true
-                        }
-
-                        launchSingleTop = true
-                    }
+                selected = viewModel.page == item.route,
+                onClick = {
+                    viewModel.page = item.route
                 }
             )
         }
