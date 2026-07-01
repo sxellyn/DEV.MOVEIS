@@ -1,15 +1,22 @@
 package com.example.weatherapp.api
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.util.Log
+import coil.ImageLoader
+import coil.request.ImageRequest
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class WeatherService {
+class WeatherService(private val context: Context) {
 
     private var weatherAPI: WeatherServiceAPI
+
+    private val imageLoader = ImageLoader.Builder(context).allowHardware(false).build()
 
     init {
         val retrofitAPI = Retrofit.Builder()
@@ -48,6 +55,21 @@ class WeatherService {
     fun getForecast(name: String, onResponse: (APIWeatherForecast?) -> Unit) {
         val call: Call<APIWeatherForecast?> = weatherAPI.forecast(name)
         enqueue(call) { onResponse.invoke(it) }
+    }
+
+    fun getBitmap(imgUrl: String, onResponse: (Bitmap?) -> Unit) {
+        val request = ImageRequest.Builder(context)
+            .data(imgUrl)
+            .allowHardware(false)
+            .target(
+                onSuccess = { drawable ->
+                    val bitmap = (drawable as BitmapDrawable).bitmap
+                    onResponse(bitmap)
+                },
+                onError = {}
+            )
+            .build()
+        imageLoader.enqueue(request)
     }
 
     private fun search(query: String, onResponse: (APILocation?) -> Unit) {
