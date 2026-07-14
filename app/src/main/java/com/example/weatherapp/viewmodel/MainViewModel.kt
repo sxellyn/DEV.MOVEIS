@@ -15,12 +15,14 @@ import com.example.weatherapp.model.City
 import com.example.weatherapp.model.Forecast
 import com.example.weatherapp.model.User
 import com.example.weatherapp.model.Weather
+import com.example.weatherapp.monitor.ForecastMonitor
 import com.example.weatherapp.ui.nav.Route
 import com.google.android.gms.maps.model.LatLng
 
 class MainViewModel(
     private val db: FBDatabase,
-    private val service: WeatherService
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor
 ) : ViewModel(), FBDatabase.Listener {
 
     private val _cities = mutableStateMapOf<String, City>()
@@ -112,30 +114,39 @@ class MainViewModel(
         _user.value = user.toUser()
     }
 
-    override fun onUserSignOut() {}
+    override fun onUserSignOut() {
+        monitor.cancelAll()
+    }
 
     override fun onCityAdded(city: FBCity) {
-        _cities[city.name!!] = city.toCity()
+        val c = city.toCity()
+        _cities[city.name!!] = c
+        monitor.updateCity(c)
     }
 
     override fun onCityUpdated(city: FBCity) {
+        val c = city.toCity()
         _cities.remove(city.name)
-        _cities[city.name!!] = city.toCity()
+        _cities[city.name!!] = c
+        monitor.updateCity(c)
     }
 
     override fun onCityRemoved(city: FBCity) {
+        val c = city.toCity()
         _cities.remove(city.name)
+        monitor.cancelCity(c)
     }
 }
 
 class MainViewModelFactory(
     private val db: FBDatabase,
-    private val service: WeatherService
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MainViewModel(db, service) as T
+            return MainViewModel(db, service, monitor) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
