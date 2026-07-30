@@ -27,7 +27,7 @@ android {
         val keyFile = project.rootProject.file("local.properties")
         val props = Properties()
         props.load(keyFile.inputStream())
-        buildConfigField("String", "WEATHER_API_KEY", props.getProperty("WEATHER_API_KEY"))
+        buildConfigField("String", "WEATHER_API_KEY", "\"${props.getProperty("WEATHER_API_KEY")}\"")
     }
 
     buildTypes {
@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

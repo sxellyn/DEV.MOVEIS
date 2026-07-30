@@ -9,7 +9,10 @@ import com.example.weatherapp.api.toForecast
 import com.example.weatherapp.api.toWeather
 import com.example.weatherapp.model.City
 import com.example.weatherapp.model.Forecast
+import com.example.weatherapp.model.User
 import com.example.weatherapp.model.Weather
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.example.weatherapp.monitor.ForecastMonitor
 import com.example.weatherapp.repo.Repository
 import com.example.weatherapp.ui.nav.Route
@@ -17,11 +20,11 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(
     private val repo: Repository,
@@ -42,15 +45,23 @@ class MainViewModel(
     private val _cities: kotlinx.coroutines.flow.Flow<Map<String, City>> = repo.cities.map { cityList ->
         cityList.associateBy { it.name }
     }
-    val cities = _cities.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+    val cities = _cities.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val _weather = MutableStateFlow<Map<String, Weather>>(emptyMap())
-    val weather = _weather.asSharedFlow()
+    val weather = _weather.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val _forecast = MutableStateFlow<Map<String, List<Forecast>?>>(emptyMap())
-    val forecast = _forecast.asSharedFlow()
+    val forecast = _forecast.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    val user = repo.user.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    val user = repo.user.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), authUser())
+
+    private fun authUser(): User? {
+        val current = Firebase.auth.currentUser ?: return null
+        val name = current.displayName?.takeIf { it.isNotBlank() }
+            ?: current.email?.substringBefore('@')
+            ?: "Usuário"
+        return User(name = name, email = current.email ?: "")
+    }
 
     fun remove(city: City) {
         repo.remove(city)
@@ -62,17 +73,33 @@ class MainViewModel(
         monitor.updateCity(city)
     }
 
-    fun addCity(name: String) = viewModelScope.launch(Dispatchers.IO) {
-        val location = service.getLocation(name)
-        repo.add(City(name = name, location = location))
-    }
-
-    fun addCity(location: LatLng) = viewModelScope.launch(Dispatchers.IO) {
-        val name = service.getName(location.latitude, location.longitude)
-        if (name != null) {
-            repo.add(City(name = name, location = location))
+    fun addCity(name: String, onResult: (String?, Boolean, String?) -> Unit = { _, _, _ -> }) =
+        viewModelScope.launch(Dispatchers.IO) {
+            val location = service.getLocation(name)
+            if (location == null) {
+                withContext(Dispatchers.Main) { onResult(null, false, null) }
+                return@launch
+            }
+            val city = City(name = name, location = location)
+            val result = repo.add(city)
+            withContext(Dispatchers.Main) {
+                onResult(name, result.isSuccess, result.exceptionOrNull()?.message)
+            }
         }
-    }
+
+    fun addCity(location: LatLng, onResult: (String?, Boolean, String?) -> Unit = { _, _, _ -> }) =
+        viewModelScope.launch(Dispatchers.IO) {
+            val name = service.getName(location.latitude, location.longitude)
+            if (name == null) {
+                withContext(Dispatchers.Main) { onResult(null, false, null) }
+                return@launch
+            }
+            val city = City(name = name, location = location)
+            val result = repo.add(city)
+            withContext(Dispatchers.Main) {
+                onResult(name, result.isSuccess, result.exceptionOrNull()?.message)
+            }
+        }
 
     fun loadWeather(name: String) {
         if (_weather.value[name] != null) return

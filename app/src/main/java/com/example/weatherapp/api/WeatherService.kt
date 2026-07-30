@@ -6,6 +6,7 @@ import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.google.android.gms.maps.model.LatLng
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -27,7 +28,7 @@ class WeatherService(private val context: Context) {
     }
 
     suspend fun getName(lat: Double, lng: Double): String? = withContext(Dispatchers.IO) {
-        search("$lat,$lng")?.name
+        search(String.format(Locale.US, "%.4f,%.4f", lat, lng))?.name
     }
 
     suspend fun getLocation(name: String): LatLng? = withContext(Dispatchers.IO) {
@@ -35,19 +36,34 @@ class WeatherService(private val context: Context) {
     }
 
     private fun search(query: String): APILocation? {
-        val call: Call<List<APILocation>?> = weatherAPI.search(query)
-        val apiLoc = call.execute().body()
+        val call: Call<List<APILocation>?> = weatherAPI.search(
+            apiKey = WeatherServiceAPI.API_KEY,
+            query = query
+        )
+        val response = call.execute()
+        if (!response.isSuccessful) return null
+        val apiLoc = response.body()
         return if (!apiLoc.isNullOrEmpty()) apiLoc[0] else null
     }
 
+    private fun executeWeather(call: Call<APICurrentWeather?>): APICurrentWeather? {
+        val response = call.execute()
+        if (!response.isSuccessful) return null
+        return response.body()
+    }
+
+    private fun executeForecast(call: Call<APIWeatherForecast?>): APIWeatherForecast? {
+        val response = call.execute()
+        if (!response.isSuccessful) return null
+        return response.body()
+    }
+
     suspend fun getWeather(name: String): APICurrentWeather? = withContext(Dispatchers.IO) {
-        val call: Call<APICurrentWeather?> = weatherAPI.weather(name)
-        call.execute().body()
+        executeWeather(weatherAPI.weather(apiKey = WeatherServiceAPI.API_KEY, query = name))
     }
 
     suspend fun getForecast(name: String): APIWeatherForecast? = withContext(Dispatchers.IO) {
-        val call: Call<APIWeatherForecast?> = weatherAPI.forecast(name)
-        call.execute().body()
+        executeForecast(weatherAPI.forecast(apiKey = WeatherServiceAPI.API_KEY, name = name))
     }
 
     suspend fun getBitmap(imgUrl: String): Bitmap? = withContext(Dispatchers.IO) {

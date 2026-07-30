@@ -14,11 +14,16 @@ class WeatherApp : Application() {
             FLAG_ACTIVITY_NEW_TASK or
             FLAG_ACTIVITY_CLEAR_TASK
 
+    private var isLoggedIn: Boolean? = null
+
     override fun onCreate() {
         super.onCreate()
 
         Firebase.auth.addAuthStateListener { firebaseAuth ->
-            if (firebaseAuth.currentUser != null) {
+            val loggedIn = firebaseAuth.currentUser != null
+            if (isLoggedIn == loggedIn) return@addAuthStateListener
+            isLoggedIn = loggedIn
+            if (loggedIn) {
                 goToMain()
             } else {
                 goToLogin()

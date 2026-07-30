@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
                 factory = MainViewModelFactory(repo, weatherService, monitor)
             )
 
-            val user = viewModel.user.collectAsStateWithLifecycle(null).value
+            val user by viewModel.user.collectAsStateWithLifecycle()
 
             DisposableEffect(Unit) {
                 val listener = Consumer<Intent> { intent ->
@@ -94,7 +94,11 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                val name = user?.name ?: "[carregando...]"
+                                val authUser = Firebase.auth.currentUser
+                                val name = user?.name?.takeIf { it.isNotBlank() }
+                                    ?: authUser?.displayName?.takeIf { it.isNotBlank() }
+                                    ?: authUser?.email?.substringBefore('@')
+                                    ?: "Usuário"
                                 Text("Bem-vindo/a! $name")
                             },
                             actions = {
@@ -123,7 +127,9 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
-                    launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    LaunchedEffect(Unit) {
+                        launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
                     Box(modifier = Modifier.padding(innerPadding)) {
                         MainNavHost(navController = navController, viewModel = viewModel)
                     }
@@ -144,7 +150,14 @@ class MainActivity : ComponentActivity() {
                     CityDialog(
                         onDismiss = { showDialog = false },
                         onConfirm = { cityName ->
-                            viewModel.addCity(cityName)
+                            viewModel.addCity(cityName) { name, saved, error ->
+                                val msg = when {
+                                    name == null -> "Cidade não encontrada"
+                                    !saved -> "Erro ao salvar: ${error ?: "Firebase"}"
+                                    else -> "$name adicionada!"
+                                }
+                                android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_LONG).show()
+                            }
                             showDialog = false
                         }
                     )

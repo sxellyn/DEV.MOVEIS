@@ -3,6 +3,7 @@ package com.example.weatherapp.repo
 import com.example.weatherapp.db.fb.FBDatabase
 import com.example.weatherapp.db.fb.toFBCity
 import com.example.weatherapp.db.local.LocalDatabase
+import com.example.weatherapp.db.local.toCity
 import com.example.weatherapp.db.local.toLocalCity
 import com.example.weatherapp.model.City
 import kotlinx.coroutines.CoroutineScope
@@ -39,7 +40,15 @@ class Repository(
         }
     }
 
-    fun add(city: City) = fbDB.add(city.toFBCity())
+    suspend fun add(city: City): Result<Unit> {
+        val result = fbDB.add(city.toFBCity())
+        if (result.isSuccess) {
+            localDB.insert(city.toLocalCity())
+            cityMap = cityMap + (city.name to city)
+        }
+        return result
+    }
+
     fun remove(city: City) = fbDB.remove(city.toFBCity())
     fun update(city: City) = fbDB.update(city.toFBCity())
 }

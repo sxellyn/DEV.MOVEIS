@@ -6,7 +6,12 @@ class FBUser {
     var name: String? = null
     var email: String? = null
 
-    fun toUser() = User(name!!, email!!)
+    fun toUser(): User {
+        val resolvedName = name?.takeIf { it.isNotBlank() }
+            ?: email?.substringBefore('@')
+            ?: "Usuário"
+        return User(resolvedName, email ?: "")
+    }
 }
 
 fun User.toFBUser(): FBUser {

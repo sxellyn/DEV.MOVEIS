@@ -12,12 +12,25 @@ interface WeatherServiceAPI {
         const val API_KEY = BuildConfig.WEATHER_API_KEY
     }
 
-    @GET("search.json?key=$API_KEY&lang=pt_br")
-    fun search(@Query("q") query: String): Call<List<APILocation>?>
+    @GET("search.json")
+    fun search(
+        @Query("key") apiKey: String,
+        @Query("q") query: String,
+        @Query("lang") lang: String = "pt_br"
+    ): Call<List<APILocation>?>
 
-    @GET("current.json?key=$API_KEY&lang=pt")
-    fun weather(@Query("q") query: String): Call<APICurrentWeather?>
+    @GET("current.json")
+    fun weather(
+        @Query("key") apiKey: String,
+        @Query("q") query: String,
+        @Query("lang") lang: String = "pt"
+    ): Call<APICurrentWeather?>
 
-    @GET("forecast.json?key=$API_KEY&days=10&lang=pt")
-    fun forecast(@Query("q") name: String): Call<APIWeatherForecast?>
+    @GET("forecast.json")
+    fun forecast(
+        @Query("key") apiKey: String,
+        @Query("q") name: String,
+        @Query("days") days: Int = 10,
+        @Query("lang") lang: String = "pt"
+    ): Call<APIWeatherForecast?>
 }

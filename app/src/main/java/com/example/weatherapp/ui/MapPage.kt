@@ -1,11 +1,13 @@
 package com.example.weatherapp.ui
 
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,13 +20,14 @@ import com.example.weatherapp.R
 import com.example.weatherapp.model.Weather
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 
 @Composable
 fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
@@ -39,11 +42,12 @@ fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
         )
     }
 
-    val recife = remember { MarkerState(LatLng(-8.05, -34.9)) }
-    val caruaru = remember { MarkerState(LatLng(-8.27, -35.98)) }
-    val joaoPessoa = remember { MarkerState(LatLng(-7.12, -34.84)) }
+    val camPosState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(-8.05, -34.9), 7f)
+    }
 
-    val camPosState = rememberCameraPositionState()
+    val cities by viewModel.cities.collectAsStateWithLifecycle()
+    val weatherMap by viewModel.weather.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.fillMaxSize()) {
         GoogleMap(
@@ -51,51 +55,36 @@ fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             cameraPositionState = camPosState,
             properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
             uiSettings = MapUiSettings(myLocationButtonEnabled = true),
-            onMapClick = {
-                viewModel.addCity(it)
+            onMapClick = { latLng ->
+                Toast.makeText(context, "Buscando cidade...", Toast.LENGTH_SHORT).show()
+                viewModel.addCity(latLng) { name, saved, error ->
+                    val msg = when {
+                        name == null -> "Cidade não encontrada"
+                        !saved -> "Erro ao salvar: ${error ?: "Firebase"}"
+                        else -> "$name adicionada!"
+                    }
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                }
             }
         ) {
-            Marker(
-                state = recife,
-                title = "Recife",
-                snippet = "Marcador em Recife",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-            )
-
-            Marker(
-                state = caruaru,
-                title = "Caruaru",
-                snippet = "Marcador em Caruaru",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-            )
-
-            Marker(
-                state = joaoPessoa,
-                title = "João Pessoa",
-                snippet = "Marcador em João Pessoa",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-            )
-
-            val cities = viewModel.cities.collectAsStateWithLifecycle(emptyMap()).value
-            val weatherMap = viewModel.weather.collectAsStateWithLifecycle(emptyMap()).value
-
-            cities.values.forEach {
-                if (it.location != null) {
-                    val weather = weatherMap[it.name] ?: Weather.LOADING
-                    LaunchedEffect(it.name) {
-                        viewModel.loadWeather(it.name)
+            cities.values.forEach { city ->
+                val location = city.location ?: return@forEach
+                key(city.name, cities.size) {
+                    val weather = weatherMap[city.name] ?: Weather.LOADING
+                    LaunchedEffect(city.name) {
+                        viewModel.loadWeather(city.name)
                     }
                     LaunchedEffect(weather) {
-                        viewModel.loadBitmap(it.name)
+                        viewModel.loadBitmap(city.name)
                     }
                     val image = weather.bitmap
                         ?: ContextCompat.getDrawable(context, R.drawable.loading)!!.toBitmap()
                     val marker = BitmapDescriptorFactory.fromBitmap(image.scale(120, 120))
                     val desc = if (weather == Weather.LOADING) "Carregando clima..." else weather.desc
                     Marker(
-                        state = MarkerState(position = it.location!!),
+                        state = rememberUpdatedMarkerState(position = location),
                         icon = marker,
-                        title = it.name,
+                        title = city.name,
                         snippet = desc
                     )
                 }
