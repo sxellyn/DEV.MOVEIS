@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.weatherapp.R
 import com.example.weatherapp.model.Weather
 import com.example.weatherapp.viewmodel.MainViewModel
@@ -74,9 +76,18 @@ fun MapPage(modifier: Modifier = Modifier, viewModel: MainViewModel) {
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
             )
 
-            viewModel.cities.forEach {
+            val cities = viewModel.cities.collectAsStateWithLifecycle(emptyMap()).value
+            val weatherMap = viewModel.weather.collectAsStateWithLifecycle(emptyMap()).value
+
+            cities.values.forEach {
                 if (it.location != null) {
-                    val weather = viewModel.weather(it.name)
+                    val weather = weatherMap[it.name] ?: Weather.LOADING
+                    LaunchedEffect(it.name) {
+                        viewModel.loadWeather(it.name)
+                    }
+                    LaunchedEffect(weather) {
+                        viewModel.loadBitmap(it.name)
+                    }
                     val image = weather.bitmap
                         ?: ContextCompat.getDrawable(context, R.drawable.loading)!!.toBitmap()
                     val marker = BitmapDescriptorFactory.fromBitmap(image.scale(120, 120))
