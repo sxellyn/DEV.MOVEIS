@@ -17,5 +17,13 @@ data class Weather(
             imgUrl = "LOADING",
             bitmap = null
         )
+
+        val ERROR = Weather(
+            date = "ERROR",
+            desc = "ERROR",
+            temp = -999.0,
+            imgUrl = "ERROR",
+            bitmap = null
+        )
     }
 }
